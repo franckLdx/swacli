@@ -1,3 +1,2 @@
-export { AppState, store } from "./store";
-export { ActionType } from './types';
+export { AppActions, store } from './combine';
 export { loadResource } from './resource';
