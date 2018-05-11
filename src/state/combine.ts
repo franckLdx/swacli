@@ -1,15 +1,23 @@
 import { applyMiddleware, combineReducers, createStore } from 'redux';
 import { createEpicMiddleware } from 'redux-observable';
-import "rxjs/add/operator/delay";
-import "rxjs/add/operator/merge";
 import { Films } from './films';
-import { epic as epicReducer, LoadResourceAction, reducer as resourceReducer } from "./resource";
+import { epic as epicReducer, LoadingResourceAction } from "./resource";
+import { LoadResourceAction, ResourceLoadedAction } from "./resource";
+import { reducer as resourceReducer } from "./resource";
+import { canLoadResource, getResource, getResourceState } from "./resource";
 
-export type AppActions = LoadResourceAction;
+export type AppActions = LoadResourceAction | LoadingResourceAction | ResourceLoadedAction;
 
-export const reducer = combineReducers<AppState>({ film: resourceReducer });
+export const selectors = {
+  canLoadResource, getResource, getResourceState
+}
 
-export const epic = createEpicMiddleware(epicReducer);
+export const reducer = combineReducers<AppState>({ films: resourceReducer });
+
+const epic = createEpicMiddleware(epicReducer, {
+  dependencies: { selectors }
+});
+
 export const middleware = applyMiddleware(epic);
 
 export interface AppState {

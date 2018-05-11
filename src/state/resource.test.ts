@@ -1,15 +1,30 @@
-import configureMockStore from 'redux-mock-store';
-import { createEpicMiddleware } from 'redux-observable';
-import { Films } from './films';
-import { loadResource, onLoadResource } from './resource';
+import { ActionsObservable } from 'redux-observable';
+import { TestScheduler } from 'rxjs';
+import { AppActions, store } from '.';
+import { loadingResource, loadResource, onLoadResource, resourceLoaded } from './resource';
 
 describe('fetch resource', () => {
-  const createMockStore = configureMockStore([createEpicMiddleware(onLoadResource)]);
-  interface State { films: Films };
+  const deepEquals = (actual: any, expected: any) => expect(actual).toEqual(expected);
+  const createTestScheduler = () => new TestScheduler(deepEquals);
 
   it('Should successfully fetch', () => {
-    const state: State = { films: { state: 'NOT_LOADED', data: [] } };
-    createMockStore(state);
-    loadResource('FILMS');
+    const marbles1 = 'a';
+    const marbles2 = '(bc)';
+    const values = {
+      a: loadResource('FILMS'),
+      b: loadingResource('FILMS'),
+      c: resourceLoaded('FILMS')
+    };
+
+    const ts = createTestScheduler();
+    const source$: ActionsObservable<AppActions> = ActionsObservable.from(
+      ts.createColdObservable(marbles1, values)
+    );
+
+    const actual = onLoadResource(source$, store, null);
+
+    ts.expectObservable(actual).toBe(marbles2, values);
+    ts.flush();
   });
+
 });

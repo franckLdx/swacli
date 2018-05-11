@@ -2,64 +2,60 @@ import { Action } from "redux";
 import { AppActions, AppState } from "./combine";
 
 import { combineEpics, Epic } from 'redux-observable';
+import { ofType } from 'redux-observable';
+import { mapTo, mergeMap } from 'rxjs/operators';
 
 export type RESOURCE_STATE = "NOT_LOADED" | "LOADING" | "LOADED" | "ERROR";
-export type RESOURCE_ID = "FILMS";
+export type RESOURCE_TYPE = "FILMS";
 
 export interface Resource<T> {
   state: RESOURCE_STATE;
   data: T[];
 }
 
-export interface LoadResourceAction extends Action {
-  type: 'LOAD'
-  resourceId: RESOURCE_ID;
-}
+export const getResource = (state: AppState, resourceType: RESOURCE_TYPE): Resource<any> => state[resourceType];
+export const getResourceState = (state: AppState, resourceType: RESOURCE_TYPE): RESOURCE_STATE => getResource(state, resourceType).state;
+export const canLoadResource = (state: AppState, resourceType: RESOURCE_TYPE): boolean => getResourceState(state, resourceType) in ['NOT_LOADED', 'ERROR'];
 
-export const reducer = <T>(action: AppActions): Resource<T> => {
-  if (!action) {
+export const reducer = <T>(previousResource: Resource<T>, action: AppActions): Resource<T> => {
+  if (!previousResource) {
     return {
       state: 'NOT_LOADED',
       // tslint:disable-next-line:object-literal-sort-keys
       data: []
     };
   }
-  switch (action.type) {
-    case 'LOAD':
-      return {
-        state: 'LOADED',
-        // tslint:disable-next-line:object-literal-sort-keys
-        data: []
-      };
-    default:
-      return {
-        state: 'NOT_LOADED',
-        // tslint:disable-next-line:object-literal-sort-keys
-        data: []
-      };
-  }
-
+  return previousResource;
 }
 
-export const loadResource = (resourceId: RESOURCE_ID): LoadResourceAction => {
+export interface LoadResourceAction extends Action {
+  type: 'LOAD'
+  resourceId: RESOURCE_TYPE;
+}
+export const loadResource = (resourceId: RESOURCE_TYPE): LoadResourceAction => {
   return { type: 'LOAD', resourceId };
+}
+
+export interface LoadingResourceAction extends Action {
+  type: 'LOADING'
+  resourceId: RESOURCE_TYPE;
+}
+export const loadingResource = (resourceId: RESOURCE_TYPE): LoadingResourceAction => {
+  return { type: 'LOADING', resourceId };
 }
 
 export interface ResourceLoadedAction extends Action {
   type: 'LOADED'
-  resourceId: RESOURCE_ID;
+  resourceId: RESOURCE_TYPE;
 }
-
-export const resourceLoaded = (resourceId: RESOURCE_ID): ResourceLoadedAction => {
+export const resourceLoaded = (resourceId: RESOURCE_TYPE): ResourceLoadedAction => {
   return { type: 'LOADED', resourceId };
 }
 
-export const onLoadResource: Epic<AppActions, AppState> = (action$, store) =>
-  action$
-    .ofType('LOAD')
-    .delay(1000)
-    .merge(
-      ({ resourceId }: AppActions) => ({ type: 'LOADED', resourceId })
-    );
+export const onLoadResource: Epic<AppActions, AppState> = (action$) =>
+  action$.pipe(
+    ofType('LOAD'),
+    mergeMap(() => [loadingResource('FILMS'), resourceLoaded('FILMS')])
+  );
 
 export const epic = combineEpics(onLoadResource);
