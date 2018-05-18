@@ -3,7 +3,7 @@ import { AppActions, AppState } from "./combine";
 
 import { combineEpics, Epic } from 'redux-observable';
 import { ofType } from 'redux-observable';
-import { mapTo, mergeMap } from 'rxjs/operators';
+import { mergeMap } from 'rxjs/operators/mergeMap';
 
 export type RESOURCE_STATE = "NOT_LOADED" | "LOADING" | "LOADED" | "ERROR";
 export type RESOURCE_TYPE = "FILMS";

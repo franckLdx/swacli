@@ -9,4 +9,4 @@ export interface Films extends Resource<Film> {
 
 }
 
-export const reducer = (action: AppActions) => resourceReducer<Films>(action);
+export const reducer = (previousResource: Resource<Films>, action: AppActions) => resourceReducer<Films>(previousResource, action);
