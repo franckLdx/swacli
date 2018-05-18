@@ -2,15 +2,18 @@ import * as React from 'react';
 import './App.css';
 
 import { Provider } from 'react-redux';
-import Films from './films';
+import { BrowserRouter } from 'react-router-dom';
+import Route from './route';
 import { store } from './state';
 
 class App extends React.Component {
   public render() {
     return (
-      <Provider store={store}>
-        <Films />
-      </Provider>
+      <BrowserRouter>
+        <Provider store={store}>
+          <Route />
+        </Provider>
+      </BrowserRouter>
     );
   }
 }
