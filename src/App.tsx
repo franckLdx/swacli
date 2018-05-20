@@ -3,7 +3,8 @@ import './App.css';
 
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
-import Route from './route';
+import Navbar from './navigation/navbar';
+import Router from './navigation/router';
 import { store } from './state';
 
 class App extends React.Component {
@@ -11,7 +12,10 @@ class App extends React.Component {
     return (
       <BrowserRouter>
         <Provider store={store}>
-          <Route />
+          <React.Fragment>
+            <Navbar />
+            <Router />
+          </React.Fragment>
         </Provider>
       </BrowserRouter>
     );
